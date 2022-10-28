@@ -33,7 +33,7 @@ type AdvancedGetOptions struct {
 
 // GetObjectOptions are used to specify additional headers or options
 // during GET requests.
-type GetObjectOptions struct {
+type  GetObjectOptions struct {
 	headers              map[string]string
 	ServerSideEncryption encrypt.ServerSide
 	VersionID            string

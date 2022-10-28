@@ -35,13 +35,19 @@ type listAllMyBucketsResult struct {
 }
 
 type queryPriceResult struct {
-	Price int
+	Price string
 	Owner owner
 }
 
 type getBalanceResult struct {
 	Balance string
 	Owner   owner
+}
+
+type getDCPCResult struct {
+	DC    uint32
+	PC    uint32
+	Owner owner
 }
 
 // owner container for bucket owner information.

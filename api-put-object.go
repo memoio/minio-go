@@ -181,6 +181,9 @@ func (opts PutObjectOptions) Header() (header http.Header) {
 			header.Set("x-amz-meta-"+k, v)
 		}
 	}
+	// if opts.Transaction != nil {
+
+	// }
 	return
 }
 
