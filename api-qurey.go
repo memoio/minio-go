@@ -6,9 +6,13 @@ import (
 	"net/url"
 )
 
-func (c *Client) QueryPrice(ctx context.Context) (string, error) {
+func (c *Client) QueryPrice(ctx context.Context, bucket, size, time string) (string, error) {
 	urlValues := make(url.Values)
 	urlValues.Set("queryprice", "")
+
+	urlValues.Set("bucket", bucket)
+	urlValues.Set("ssize", size)
+	urlValues.Set("stime", time)
 
 	reqMetadata := requestMetadata{
 		queryValues:      urlValues,
@@ -38,8 +42,9 @@ func (c *Client) GetBalanceInfo(ctx context.Context, addr string) (string, error
 	urlValues := make(url.Values)
 	urlValues.Set("getbalance", "")
 
+	urlValues.Set("addr", addr)
+
 	reqMetadata := requestMetadata{
-		bucketName:       addr,
 		queryValues:      urlValues,
 		contentSHA256Hex: emptySHA256Hex,
 	}
@@ -63,12 +68,11 @@ func (c *Client) GetBalanceInfo(ctx context.Context, addr string) (string, error
 	return getBalanceResult.Balance, nil
 }
 
-func (c *Client) GetDCAndPC(ctx context.Context, bucket string) (uint32, uint32, error) {
+func (c *Client) GetTokenAddress(ctx context.Context) (string, error) {
 	urlValues := make(url.Values)
-	urlValues.Set("getbucketdcandpc", "")
+	urlValues.Set("gettokenaddress", "")
 
 	reqMetadata := requestMetadata{
-		bucketName:       bucket,
 		queryValues:      urlValues,
 		contentSHA256Hex: emptySHA256Hex,
 	}
@@ -77,17 +81,71 @@ func (c *Client) GetDCAndPC(ctx context.Context, bucket string) (uint32, uint32,
 
 	defer closeResponse(resp)
 	if err != nil {
-		return 0, 0, err
+		return "", err
 	}
 	if resp != nil {
 		if resp.StatusCode != http.StatusOK {
-			return 0, 0, httpRespToErrorResponse(resp, bucket, "")
+			return "", httpRespToErrorResponse(resp, "", "")
 		}
 	}
-	getDCPCResult := getDCPCResult{}
-	err = xmlDecoder(resp.Body, &getDCPCResult)
+	getTokenAddressResult := getTokenAddressResult{}
+	err = xmlDecoder(resp.Body, &getTokenAddressResult)
 	if err != nil {
-		return 0, 0, err
+		return "", err
 	}
-	return getDCPCResult.DC, getDCPCResult.PC, nil
+	return getTokenAddressResult.Addr, nil
+}
+
+func (c *Client) GetGatewayAddress(ctx context.Context) (string, error) {
+	urlValues := make(url.Values)
+	urlValues.Set("getgatewayaddress", "")
+
+	reqMetadata := requestMetadata{
+		queryValues:      urlValues,
+		contentSHA256Hex: emptySHA256Hex,
+	}
+
+	resp, err := c.executeMethod(ctx, http.MethodGet, reqMetadata)
+
+	defer closeResponse(resp)
+	if err != nil {
+		return "", err
+	}
+	if resp != nil {
+		if resp.StatusCode != http.StatusOK {
+			return "", httpRespToErrorResponse(resp, "", "")
+		}
+	}
+	getGatewayAddressResult := getTokenAddressResult{}
+	err = xmlDecoder(resp.Body, &getGatewayAddressResult)
+	if err != nil {
+		return "", err
+	}
+	return getGatewayAddressResult.Addr, nil
+}
+
+func (c *Client) Approve(ctx context.Context, ts, faddr string) error {
+	urlValues := make(url.Values)
+	urlValues.Set("approve", "")
+
+	urlValues.Set("ts", ts)
+	urlValues.Set("faddr", faddr)
+
+	reqMetadata := requestMetadata{
+		queryValues:      urlValues,
+		contentSHA256Hex: emptySHA256Hex,
+	}
+
+	resp, err := c.executeMethod(ctx, http.MethodGet, reqMetadata)
+	defer closeResponse(resp)
+	if err != nil {
+		return err
+	}
+	if resp != nil {
+		if resp.StatusCode != http.StatusOK {
+			return httpRespToErrorResponse(resp, "", "")
+		}
+	}
+
+	return nil
 }

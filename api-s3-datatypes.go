@@ -44,6 +44,11 @@ type getBalanceResult struct {
 	Owner   owner
 }
 
+type getTokenAddressResult struct {
+	Addr  string
+	Owner owner
+}
+
 type getDCPCResult struct {
 	DC    uint32
 	PC    uint32
